@@ -1,7 +1,7 @@
 #include "utils.h"
 
 void printHelp() {
-    printf("Usage: imfilter [-p NUMBER_OF_PROCESSES] -k KERNEL -i INPUT_IMAGE -o OUTPUT_IMAGE [-h]");
+    printf("Usage: imfilter [-p NUMBER_OF_PROCESSES] -k KERNEL -i INPUT_IMAGE -o OUTPUT_IMAGE [-h]\n");
 }
 
 void printfe(char *msg) {
@@ -10,14 +10,37 @@ void printfe(char *msg) {
     exit(EXIT_FAILURE);
 }
 
+void freematrix(Pixel **mat, int height) {
+    for (int i = 0; i < height; ++i)
+        free(mat[i]);
+    free(mat);
+}
+
 void *smalloc (size_t size) {
     void *mem = malloc (size);
 
     if (mem == NULL) {
-
+	printfe("Not enough available memory to allocate");
     }
 
     return mem;
+}
+
+Pixel **matrixsmalloc(size_t width, size_t height) {
+    Pixel **mat = (Pixel **) malloc (height);
+
+    if (mat == NULL) {
+        printfe("Not enough available memory to allocate");
+    }
+    
+    for (int i = 0; i < height; ++i) {
+        mat[i] = (Pixel *) malloc (width);
+        if (mat[i] == NULL) {
+            printfe("Not enough available memory to allocate");
+        }
+    }
+
+    return mat;
 }
 
 FILE *safe_fopen(char *file, char *mode)
@@ -31,74 +54,4 @@ FILE *safe_fopen(char *file, char *mode)
     }
 
     return f;
-}
-
-void parseArgs(int argc, char **argv, int *Np, char *kernelStr, char *inputImage, char *outputImage) {
-
-    int option;
-    int pflag = 1, kflag = 1, iflag = 1, oflag = 1, hflag = 1;
-
-    while ((option = getopt(argc, argv, "p:k:i:o:h")) != -1) {
-        switch (option) {
-            case 'p':
-                if (pflag) {
-                    printfe("Only one -p argument may be passed");
-                }
-
-                *Np = optarg;
-
-                pflag = 1;
-                break;
-            case 'k':
-                if (kflag) {
-                    printfe("Only one -k argument may be passed");
-                }
-
-                kernelStr = (char *) malloc (sizeof(optarg));
-                memcpy(kernelStr, optarg, sizeof(optarg));
-
-                kflag = 1;
-                break;
-            case 'i':
-                if (iflag) {
-                    printfe("Only one -i argument may be passed");
-                }
-
-                inputImage = (char *) malloc (sizeof(optarg));
-                memcpy(inputImage, optarg, sizeof(optarg));
-
-                iflag = 1;
-                break;
-            case 'o':
-                if (oflag) {
-                    printfe("Only one -o argument may be passed");
-                }
-
-                oflag = 1;
-                break;
-            case 'h':
-                if (hflag) {
-                    printfe("Only one -h argument may be passed");
-                }
-
-                hflag = 1;
-                break;
-            default:
-                printfe("Unknown input arguments.\n");
-        }
-    }
-
-    if (hflag) {
-        printHelp();
-        exit(EXIT_SUCCESS);
-    }
-
-    if (!pflag) {
-        *Np = get_nprocs();
-    }
-
-    if (!kflag || !iflag || !oflag) {
-        printfe("Insufficient input arguments.\n");
-    }
-
 }

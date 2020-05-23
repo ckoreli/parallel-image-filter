@@ -8,6 +8,9 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/sysinfo.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <wait.h>
 
 #include <unistd.h>
 #include <getopt.h>
